@@ -91,7 +91,7 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/devices_lib/accel/lis302dl.c \
        $(CHIBIOS)/os/various/shell.c \
        $(CHIBIOS)/os/various/chprintf.c \
-       usbcfg.c main.c
+       usbcfg.c main.c communication.c my_shell.c PWMsetup.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
