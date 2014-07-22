@@ -8,20 +8,13 @@
 #include "PWMsetup.h"
 
 /*
- * PWM cyclic callback.
- */
-static void pwmpcb(PWMDriver *pwmp) {
-	(void)pwmp;
-}
-
-/*
  * PWM configuration structure.
  * the active state is a logic one.
  */
 static PWMConfig pwmcfg = {
 		1000000,
 		20000, 		// 50 Hz PWM frequency
-		pwmpcb,
+		NULL,
 		{
 				{PWM_OUTPUT_ACTIVE_HIGH, NULL},
 				{PWM_OUTPUT_ACTIVE_HIGH, NULL},
@@ -63,17 +56,17 @@ void startPWM(void) {
 	/* Start up PWMs so ESCs can initialize.
 	 * You usually need to start it out at 1mS (ie motor off) for several seconds to arm the ESC.
 	 */
-	pwmEnableChannel(&PWMD4, 0, duty);
-	pwmEnableChannel(&PWMD4, 1, duty);
-	pwmEnableChannel(&PWMD4, 2, duty);
-	pwmEnableChannel(&PWMD4, 3, duty);
+	pwmEnableChannel(&PWMD4, 0, 1000);
+	pwmEnableChannel(&PWMD4, 1, 1000);
+	pwmEnableChannel(&PWMD4, 2, 1000);
+	pwmEnableChannel(&PWMD4, 3, 1000);
 
 	// wait 3 sechonds to initialize ESC
-	chThdSleepMilliseconds(5000);
+//	chThdSleepMilliseconds(5000);
 
 	// set duty cycle between 1ms (1000) and 2200 (2ms)
-	pwmEnableChannel(&PWMD4, 0, 2300);
-	pwmEnableChannel(&PWMD4, 1, 2300);
-	pwmEnableChannel(&PWMD4, 2, 2300);
-	pwmEnableChannel(&PWMD4, 3, 2300);
+//	pwmEnableChannel(&PWMD4, 0, 2300);
+//	pwmEnableChannel(&PWMD4, 1, 2300);
+//	pwmEnableChannel(&PWMD4, 2, 2300);
+//	pwmEnableChannel(&PWMD4, 3, 2300);
 }
