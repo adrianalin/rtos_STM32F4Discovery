@@ -4,9 +4,10 @@
 #include "ch.h"
 #include "hal.h"
 
-void init_i2c2(void);
-
 // init USART; to be used with the JYMCU (serial bluetooth)
 void init_USART2(void);
+void printn(int16_t n);
+void println(char *p);
+void print(char *p);
 
 #endif

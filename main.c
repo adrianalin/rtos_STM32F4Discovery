@@ -1,31 +1,12 @@
 #include "ch.h"
 #include "hal.h"
 
-#include <string.h>
-
 // my includes
 #include "communication.h"
-#include "my_shell.h"
+#include "accelgiro.h"
 #include "PWMsetup.h"
 
-// global vars
-extern SerialUSBDriver SDU1;
-const ShellCommand commands[] = {
-		{"mem", cmd_mem},
-		{"threads", cmd_threads},
-		{"test", cmd_test},
-		{NULL, NULL}
-};
-const ShellConfig shell_cfg = {
-		(BaseSequentialStream *)&SDU1,
-		commands
-};
-
 int main(void) {
-	Thread *shelltp = NULL;
-
-	uint8_t txbuf[2];
-	uint8_t rxbuf[2];
 	uint8_t sbuf2[100];
 	int len=0;
 
@@ -39,14 +20,11 @@ int main(void) {
 	halInit();
 	chSysInit();
 
-	// init shell over USB (/dev/ttyACM0, 115200 bps)
-//	my_shellInit();
-
 	init_USART2();
 
-	init_i2c2();
+	if(!init_i2c2())
+		return 1;
 
-	// initializes the PWM and starts it
 	startPWM();
 
 	while(1)
@@ -55,20 +33,8 @@ int main(void) {
 		if(len>=1)
 			sdWrite(&SD2, "sal", strlen("sal"));
 
-		if (!shelltp) {
-			if (SDU1.config->usbp->state == USB_ACTIVE) {
-				/* Spawns a new shell.*/
-				shelltp = shellCreate(&shell_cfg, SHELL_WA_SIZE, NORMALPRIO);
-			}
-		}
-		else {
-			/* If the previous shell exited.*/
-			if (chThdTerminated(shelltp)) {
-				/* Recovers memory of the previous shell.*/
-				chThdRelease(shelltp);
-				shelltp = NULL;
-			}
-		}
+		getRawAccelGyro();
+
 		chThdSleepMilliseconds(500);
 	}
 }
