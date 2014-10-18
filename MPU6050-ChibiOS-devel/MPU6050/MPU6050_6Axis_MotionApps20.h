@@ -82,9 +82,9 @@ extern const uint8_t dmpConfig[MPU6050_DMP_CONFIG_SIZE];
 
 extern const uint8_t dmpUpdates[MPU6050_DMP_UPDATES_SIZE];
 
-uint8_t MPUdmpInitialize();
+uint8_t MPUdmpInitialize(void);
 
-bool_t MPUdmpPacketAvailable();
+bool_t MPUdmpPacketAvailable(void);
 
 // uint8_t MPU6050::dmpSetFIFORate(uint8_t fifoRate);
 // uint8_t MPU6050::dmpGetFIFORate();

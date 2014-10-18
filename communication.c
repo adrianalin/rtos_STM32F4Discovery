@@ -6,6 +6,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "communication.h"
 
 /**
@@ -53,19 +54,31 @@ void printn(int16_t n) {
 	}
 }
 
-void init_USART2(void)
+static SerialConfig serialCfg =
 {
-	SerialConfig sConfig2;
+		9600 // bit rate
+};
 
-	sConfig2.speed = 9600;
-	sConfig2.cr1 = 0;
-	sConfig2.cr2 = USART_CR2_STOP1_BITS | USART_CR2_LINEN;
-	sConfig2.cr3 = 0;
+void initUSART2(void)
+{
+	// ATTENTION! - power the JY-MCU (serial bluetooth) from 5V, GND (not VDD, GND)
+	// PD5(TX) and PD6(RX) are routed to USART2
+	palSetPadMode(GPIOD, 5, PAL_MODE_ALTERNATE(7));
+	palSetPadMode(GPIOD, 6, PAL_MODE_ALTERNATE(7));
 
-	//	PA2(TX) and PA3(RX) are routed to USART2
-	palSetPadMode(GPIOA, 2, PAL_MODE_ALTERNATE(7));
-	palSetPadMode(GPIOA, 3, PAL_MODE_ALTERNATE(7));
+	// Activates the serial driver 2 using the driver default configuration.
+	sdStart(&SD2, &serialCfg);
+}
 
-	//	Activates the serial driver 2 using the driver default configuration.
-	sdStart(&SD2, &sConfig2);
+void checkUSART2Messages()
+{
+	char buf[3];
+	char message[] = "Ok\r\n";
+	int bufLen=0, messageLen=0;
+
+	memset(buf, 0x00, sizeof(buf));
+
+	bufLen = chnRead(&SD2, (uint8_t*) buf, sizeof(buf));
+	if (bufLen>=1)
+		messageLen = chnWrite(&SD2, (uint8_t* ) message, strlen(message));
 }
