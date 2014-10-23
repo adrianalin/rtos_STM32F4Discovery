@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16
+  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16
 endif
 
 # C specific options here (added to USE_OPT).
@@ -91,7 +91,7 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/devices_lib/accel/lis302dl.c \
        $(CHIBIOS)/os/various/shell.c \
        $(CHIBIOS)/os/various/chprintf.c 							\
-       usbcfg.c main.c communication.c PWMsetup.c 		\
+       usbcfg.c main.c communication.c PWMsetup.c utils.c		\
        accelgiro.c													\
        MPU6050-ChibiOS-devel/i2cdev_chibi/i2cdev_chibi.c 			\
        MPU6050-ChibiOS-devel/MPU6050/MPU6050_6Axis_MotionApps20.c	\

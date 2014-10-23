@@ -7,6 +7,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+
+#include "utils.h"
 #include "communication.h"
 
 /**
@@ -59,7 +61,7 @@ static SerialConfig serialCfg =
 		9600 // bit rate
 };
 
-void initUSART2(void)
+static void initUSART2(void)
 {
 	// ATTENTION! - power the JY-MCU (serial bluetooth) from 5V, GND (not VDD, GND)
 	// PD5(TX) and PD6(RX) are routed to USART2
@@ -70,15 +72,39 @@ void initUSART2(void)
 	sdStart(&SD2, &serialCfg);
 }
 
-void checkUSART2Messages()
+static void parseMessage(char* message,  int len)
 {
-	char buf[3];
-	char message[] = "Ok\r\n";
-	int bufLen=0, messageLen=0;
+	confirmMessage();
+}
 
-	memset(buf, 0x00, sizeof(buf));
+__attribute__((noreturn)) msg_t threadCheckUSART2Messages(void *arg)
+{
+	char messageLengthChar[2], message[20];
+	const int len = sizeof(messageLengthChar) / sizeof(char);
+	const int maxMessageLength = sizeof(message) / sizeof(char);
+	int recvLen, messageLength;
+	const int readTimeout=50;
 
-	bufLen = chnRead(&SD2, (uint8_t*) buf, sizeof(buf));
-	if (bufLen>=1)
-		messageLen = chnWrite(&SD2, (uint8_t* ) message, strlen(message));
+	initUSART2();
+
+	while (1)
+	{
+		memset(message, 0x00, sizeof(message));
+
+		recvLen = sdReadTimeout(&SD2, (uint8_t*) &messageLengthChar, len, readTimeout);
+		if (recvLen == len)
+		{
+			messageLength = my_atoi(messageLengthChar);
+			if (messageLength <= maxMessageLength)
+			{
+				recvLen = sdReadTimeout(&SD2, (uint8_t*) &message, messageLength, readTimeout);
+				if (message[messageLength - 1] == 's')
+				{
+					parseMessage(message, messageLength);
+				}
+			}
+		}
+
+		chThdSleepMilliseconds(200);
+	}
 }

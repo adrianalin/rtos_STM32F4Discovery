@@ -5,6 +5,9 @@
 #include "communication.h"
 #include "accelgiro.h"
 #include "PWMsetup.h"
+#include "utils.h"
+
+static WORKING_AREA(checkUSART_WA, 128);
 
 int main(void) {
 	/*
@@ -17,16 +20,19 @@ int main(void) {
 	halInit();
 	chSysInit();
 
-	initUSART2();
+	initFeedbackLEDs();
 
 //	if(!init_i2c2())
 //		return 1;
 
 //	startPWM();
 
+	/* Launches checkUSART thread, with the working area checkUSART_WA and no arguments */
+	chThdCreateStatic(checkUSART_WA, sizeof(checkUSART_WA),
+			NORMALPRIO, threadCheckUSART2Messages, NULL);
+
 	while(1)
 	{
-		checkUSART2Messages();
 //		getRawAccelGyro();
 
 		chThdSleepMilliseconds(500);
