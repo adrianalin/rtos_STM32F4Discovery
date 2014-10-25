@@ -18,8 +18,8 @@ int my_atoi(char *p) {
 
 void initFeedbackLEDs()
 {
-	palSetPadMode(GPIOD, 5, PAL_MODE_OUTPUT_PUSHPULL);
-	palSetPad(GPIOD, 5);
+	palSetPadMode(GPIOD, 14, PAL_MODE_OUTPUT_PUSHPULL);
+	palClearPad(GPIOD, 14);
 
 	palSetPadMode(GPIOA, 9, PAL_MODE_OUTPUT_PUSHPULL);
 	palClearPad(GPIOA, 9);
@@ -28,15 +28,15 @@ void initFeedbackLEDs()
 void errorRecvMessage(void)
 {
 	// red LED
-	palClearPad(GPIOD, 5);
-	chThdSleepMilliseconds(500);
-	palSetPad(GPIOD, 5);
+	palSetPad(GPIOD, 14);
+	chThdSleepMilliseconds(10);
+	palClearPad(GPIOD, 14);
 }
 
 void confirmMessage(void)
 {
 	// green LED
 	palSetPad(GPIOA, 9);
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(10);
 	palClearPad(GPIOA, 9);
 }
