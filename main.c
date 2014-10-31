@@ -20,8 +20,6 @@ int main(void) {
 	halInit();
 	chSysInit();
 
-	initFeedbackLEDs();
-
 //	if(!init_i2c2())
 //		return 1;
 

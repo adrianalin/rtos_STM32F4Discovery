@@ -11,11 +11,53 @@
 #include "utils.h"
 #include "communication.h"
 
-// global variables
+#define ROBOT_NAME "aerial"
+#define BLUETOOTH_SPEED 115200
+/*
+  The posible baudrates are:
+    AT+BAUD1-------1200
+    AT+BAUD2-------2400
+    AT+BAUD3-------4800
+    AT+BAUD4-------9600 - Default for hc-06
+    AT+BAUD5------19200
+    AT+BAUD6------38400
+    AT+BAUD7------57600
+    AT+BAUD8-----115200
+    AT+BAUD9-----230400
+    AT+BAUDA-----460800
+    AT+BAUDB-----921600
+    AT+BAUDC----1382400
+*/
 
-/**
- *
- */
+void configureBluetoothDevice()
+{
+	char response[20];
+	int readTimeout = 5000;
+
+	memset(response, 0, sizeof(response));
+	// Should respond with OK
+	sdWrite(&SD2, "AT", strlen("AT"));
+	sdReadTimeout(&SD2, response, sizeof(response), readTimeout);
+
+	memset(response, 0, sizeof(response));
+	// Should respond with its version
+	sdWrite(&SD2, "AT+VERSION", strlen("AT+VERSION"));
+	sdReadTimeout(&SD2, response, sizeof(response), readTimeout);
+
+	memset(response, 0, sizeof(response));
+	// Set the name to ROBOT_NAME
+	sdWrite(&SD2, "AT+NAME", strlen("AT+NAME"));
+	sdWrite(&SD2, ROBOT_NAME, strlen(ROBOT_NAME));
+	sdReadTimeout(&SD2, response, sizeof(response), readTimeout);
+
+	memset(response, 0, sizeof(response));
+	// Set baudrate to 57600
+	sdWrite(&SD2, "AT+BAUD8", strlen("AT+BAUD8"));
+	sdReadTimeout(&SD2, response, sizeof(response), readTimeout);
+
+	memset(response, 0, sizeof(response));
+}
+
 void print(char *p) {
 
 	while (*p) {
@@ -23,9 +65,6 @@ void print(char *p) {
 	}
 }
 
-/**
- *
- */
 void println(char *p) {
 
 	while (*p) {
@@ -34,9 +73,6 @@ void println(char *p) {
 	sdWriteTimeout(&SD2, (uint8_t *)"\r\n", 2, TIME_INFINITE);
 }
 
-/**
- *
- */
 void printn(int16_t n) {
 	char buf[16], *p;
 
@@ -60,7 +96,7 @@ void printn(int16_t n) {
 
 static SerialConfig serialCfg =
 {
-		9600 // bit rate
+		BLUETOOTH_SPEED // bit rate
 };
 
 static void initUSART2(void)
@@ -76,78 +112,61 @@ static void initUSART2(void)
 
 static void parseMessage(char* message, int messageLength)
 {
-	// message =  i10i230i221S
-	static const int len=3;
-	static char nrChar;
-	static int commands[3], cnt = 0, nr = 0;
-	static char commandChar[3];
-	static char ok = 0;
-
-	memset(commands, 0, sizeof(commands));
+	// "111i0i0S"
+	static char* auxMessage;
+	static int i = 0, j = 0;
+	static int command[3], commandIndex = 0;
+	static char commandChar[5];
+	i = 0;
+	j = 0;
+	commandIndex = 0;
+	auxMessage = message;
+	memset(command, 0, sizeof(command));
 	memset(commandChar, 0, sizeof(commandChar));
-	cnt = 0;
 
-	while (*message != 'S')
-	{
-		ok = 0;
-		if (*message == 'i')
-		{
-			message++;
-			// message =  10i230i221S
-			nrChar = *message;
-			nr = strtol(&nrChar, NULL, 10);
-			message++;
-			// message =  0i230i221S
-			if (nr <= len)
-			{
-				memcpy(commandChar, message, nr);
-				message = message + nr;
-				commands[cnt] = strtol(commandChar, NULL, 10);
-				memset(commandChar, 0, len);
-				cnt++;
-				ok = 1;
-			}
+	while ((auxMessage[i] != 'S') && (i < messageLength)) {
+		if (auxMessage[i] == 'i') {
+			command[commandIndex] = strtol(commandChar, NULL, 10);
+			commandIndex++;
+			j = 0;
+			memset(commandChar, 0, sizeof(commandChar));
+		} else {
+			commandChar[j] = auxMessage[i];
+			j++;
 		}
-		if (!ok)
-			break;
+		i++;
 	}
+	command[commandIndex] = strtol(commandChar, NULL, 10);
 
-	if (ok)
+	if (commandIndex == 2) {
 		confirmMessage();
+	} else {
+		errorRecvMessage();
+	}
 }
 
 __attribute__((noreturn)) msg_t threadCheckUSART2Messages(void *arg)
 {
-	char messageLengthChar[2], message[20];
-	const int len = sizeof(messageLengthChar) / sizeof(char);
-	const int maxMessageLength = sizeof(message) / sizeof(char);
-	int recvLen, messageLength;
+	char message[20];
+	int recvLen;
 	const int readTimeout = 50;
-	unsigned char ok = 0;
 
+	initFeedbackLEDs();
 	initUSART2();
 
 	while (1)
 	{
 		memset(message, 0x00, sizeof(message));
+		recvLen = sdReadTimeout(&SD2, (uint8_t*) message, sizeof(message), readTimeout);
 
-		recvLen = sdReadTimeout(&SD2, (uint8_t*) &messageLengthChar, len, readTimeout);
-		if (recvLen == len)
-		{
-			ok = 0;
-			messageLength = strtol(messageLengthChar, NULL, 10);
-			if (messageLength <= maxMessageLength)
-			{
-				recvLen = sdReadTimeout(&SD2, (uint8_t*) &message, messageLength, readTimeout);
-				if (message[messageLength - 1] == 'S')
-				{
-					ok = 1;
-					parseMessage(message, messageLength);
-				}
+		if (recvLen >= 5) {
+			if (message[recvLen - 1] == 'S') {
+				parseMessage(message, recvLen);
+			} else {
+				errorRecvMessage();
 			}
 		}
-		chThdSleepMilliseconds(200);
-		if (!ok)
-			errorRecvMessage();
+
+		chThdSleepMilliseconds(50);
 	}
 }
