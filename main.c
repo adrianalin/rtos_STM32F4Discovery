@@ -2,12 +2,11 @@
 #include "hal.h"
 
 // my includes
-#include "communication.h"
-#include "accelgiro.h"
-#include "PWMsetup.h"
-#include "utils.h"
+#include "BluetoothCommunicationThread.h"
+#include "FlightControllerThread.h"
 
-static WORKING_AREA(checkUSART_WA, 128);
+static WORKING_AREA(bluetoothCommunicationThread_WA, 128);
+static WORKING_AREA(flightControllerThread_WA, 128);
 
 int main(void) {
 	/*
@@ -23,11 +22,11 @@ int main(void) {
 //	if(!init_i2c2())
 //		return 1;
 
-//	startPWM();
+	chThdCreateStatic(bluetoothCommunicationThread_WA, sizeof(bluetoothCommunicationThread_WA),
+			NORMALPRIO, bluetoothCommunicationThread, NULL);
 
-	/* Launches checkUSART thread, with the working area checkUSART_WA and no arguments */
-	chThdCreateStatic(checkUSART_WA, sizeof(checkUSART_WA),
-			NORMALPRIO, threadCheckUSART2Messages, NULL);
+	chThdCreateStatic(flightControllerThread_WA, sizeof(flightControllerThread_WA),
+			NORMALPRIO, flightControllerThread, NULL);
 
 	while(1)
 	{

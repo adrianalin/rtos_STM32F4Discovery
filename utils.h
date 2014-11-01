@@ -16,9 +16,9 @@ int my_atoi(char *p);
 void initFeedbackLEDs(void);
 
 // error receiving message - Red LED - on 500ms - OFF
-void errorRecvMessage(void);
+void errorRecvMessageLED(void);
 
 // Confirm the received message - Green LED - ON 500ms - OFF
-void confirmMessage(void);
+void confirmMessageLED(void);
 
 #endif /* UTILS_H_ */

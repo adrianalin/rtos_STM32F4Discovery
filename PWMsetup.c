@@ -35,10 +35,11 @@ void startPWM(void) {
 	/*
 	 * routes the TIM4 outputs to the board LEDs.
 	 */
-//	palSetPadMode(GPIOD, GPIOD_LED3, PAL_MODE_ALTERNATE(2));  /* Orange.  */
-//	palSetPadMode(GPIOD, GPIOD_LED4, PAL_MODE_ALTERNATE(2));  /* Green.   */
-//	palSetPadMode(GPIOD, GPIOD_LED5, PAL_MODE_ALTERNATE(2));  /* Red.     */
-//	palSetPadMode(GPIOD, GPIOD_LED6, PAL_MODE_ALTERNATE(2));  /* Blue.    */
+	palSetPadMode(GPIOD, GPIOD_LED3, PAL_MODE_ALTERNATE(2));  /* Orange.  */
+	palSetPadMode(GPIOD, GPIOD_LED4, PAL_MODE_ALTERNATE(2));  /* Green.   */
+	palSetPadMode(GPIOD, GPIOD_LED5, PAL_MODE_ALTERNATE(2));  /* Red.     */
+	palSetPadMode(GPIOD, GPIOD_LED6, PAL_MODE_ALTERNATE(2));  /* Blue.    */
+
 //
 //	pwmEnableChannelI(&PWMD4, 0, PWM_FRACTION_TO_WIDTH(&PWMD4, 4096, 200));
 //	pwmEnableChannelI(&PWMD4, 1, PWM_FRACTION_TO_WIDTH(&PWMD4, 4096, 300));
@@ -48,18 +49,18 @@ void startPWM(void) {
 	/*
 	 * routes the TIM4 outputs to PB6, PB7, PB8, PB9 (Motors)
 	 */
-	palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(2));
-	palSetPadMode(GPIOB, 7, PAL_MODE_ALTERNATE(2));
-	palSetPadMode(GPIOB, 8, PAL_MODE_ALTERNATE(2));
-	palSetPadMode(GPIOB, 9, PAL_MODE_ALTERNATE(2));
+//	palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(2));
+//	palSetPadMode(GPIOB, 7, PAL_MODE_ALTERNATE(2));
+//	palSetPadMode(GPIOB, 8, PAL_MODE_ALTERNATE(2));
+//	palSetPadMode(GPIOB, 9, PAL_MODE_ALTERNATE(2));
 
 	/* Start up PWMs so ESCs can initialize.
 	 * You usually need to start it out at 1mS (ie motor off) for several seconds to arm the ESC.
 	 */
-	pwmEnableChannel(&PWMD4, 0, 1000);
-	pwmEnableChannel(&PWMD4, 1, 1000);
-	pwmEnableChannel(&PWMD4, 2, 1000);
-	pwmEnableChannel(&PWMD4, 3, 1000);
+//	pwmEnableChannel(&PWMD4, 0, 1000);
+//	pwmEnableChannel(&PWMD4, 1, 1000);
+//	pwmEnableChannel(&PWMD4, 2, 1000);
+//	pwmEnableChannel(&PWMD4, 3, 1000);
 
 	// wait 3 sechonds to initialize ESC
 //	chThdSleepMilliseconds(5000);
@@ -69,4 +70,24 @@ void startPWM(void) {
 //	pwmEnableChannel(&PWMD4, 1, 2300);
 //	pwmEnableChannel(&PWMD4, 2, 2300);
 //	pwmEnableChannel(&PWMD4, 3, 2300);
+}
+
+void setMotor0DC(int value)
+{
+	pwmEnableChannel(&PWMD4, 0, value);
+}
+
+void setMotor1DC(int value)
+{
+	pwmEnableChannel(&PWMD4, 1, value);
+}
+
+void setMotor2DC(int value)
+{
+	pwmEnableChannel(&PWMD4, 2, value);
+}
+
+void setMotor3DC(int value)
+{
+	pwmEnableChannel(&PWMD4, 3, value);
 }
