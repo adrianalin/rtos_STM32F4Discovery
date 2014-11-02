@@ -13,5 +13,6 @@
 
 bool_t init_i2c2(void);
 void DMPdata(void);
+void getTemperature(void);
 
 #endif /* ACCELGIRO_H_ */

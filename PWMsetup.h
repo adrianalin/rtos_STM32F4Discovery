@@ -12,5 +12,9 @@
 #include "hal.h"
 
 void startPWM(void);
+void setMotor0DC(int value);
+void setMotor1DC(int value);
+void setMotor2DC(int value);
+void setMotor3DC(int value);
 
 #endif /* PWMSETUP_H_ */

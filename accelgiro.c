@@ -11,7 +11,7 @@
 #include "MPU6050-ChibiOS-devel/MPU6050/helper_3dmath.h"
 #include "MPU6050-ChibiOS-devel/MPU6050/MPU6050_6Axis_MotionApps20.h"
 
-#define OUTPUT_READABLE_QUATERNION
+#define OUTPUT_READABLE_YAWPITCHROLL
 
 // MPU control/status vars
 bool_t accelGyroOK=false;
@@ -40,24 +40,26 @@ static const I2CConfig i2cfg2 = {
 
 bool_t init_i2c2(void)
 {
-//	println("Init I2C");
+	println("Init I2C");
 
 	// I2C interface #2
+	// connect VIO to 3V on Discovery Board!!!; connect VDD to 3V on Discovery Board!!!
 	i2cStart(&I2CD2, &i2cfg2);
-	palSetPadMode(GPIOB, 10, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN);	// I2C2_SCL PB10; connect VIO to 3.3V !!!
+	palSetPadMode(GPIOB, 10, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN);	// I2C2_SCL PB10
 	palSetPadMode(GPIOB, 11, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN);	// I2C2_SDA PB11
 
 	// init accelerometer
 	MPU6050(0x69);
 	chThdSleepMilliseconds(100);
 	MPUinitialize();
+	MPUsetTempSensorEnabled(1);
 
 	// verify connection
-	if(MPUtestConnection() == true) {
-//		println("MPUtestConnection (i2c) ok");
+	if (MPUtestConnection() == true) {
+		println("MPUtestConnection (i2c) ok");
 		accelGyroOK = true;
 	} else {
-//		println("MPUtestConnection (i2c) not ok");
+		println("MPUtestConnection (i2c) not ok");
 		accelGyroOK = false;
 	}
 
@@ -78,6 +80,9 @@ bool_t init_i2c2(void)
 
         // get expected DMP packet size for later comparison
         packetSize = MPUdmpGetFIFOPacketSize();
+        print("packetSize = ");
+        printn(packetSize);
+        println("");
 	} else {
         // ERROR!
         // 1 = initial memory load failed
@@ -100,6 +105,8 @@ bool_t init_i2c2(void)
 }
 
 void DMPdata(void) {
+	uint8_t status;
+
 	// if programming failed, don't try to do anything
 	if (!dmpReady)
 		return;
@@ -109,39 +116,54 @@ void DMPdata(void) {
 	if (fifoCount == 1024) {
 		// reset so we can continue cleanly
 		MPUresetFIFO();
-		println("FIFO overflow!");
-
 		// otherwise, check for DMP data ready interrupt (this should happen frequently)
-	} else if (fifoCount >= 42) {
+	} else if ((fifoCount >= 42) && (packetSize <= sizeof(fifoBuffer))) {
 		// read a packet from FIFO
 		MPUgetFIFOBytes(fifoBuffer, packetSize);
 
 #ifdef OUTPUT_READABLE_QUATERNION
 		// display quaternion values in easy matrix form: w x y z
-		MPUdmpGetQuaternion(&q, fifoBuffer);
-//		println("quat %7.2f %7.2f %7.2f %7.2f    ", q.w,q.x,q.y,q.z);
-//		print("q.w: ");
-//		printn(q.w);
-//		print(" q.x: ");
-//		printn(q.x);
-//		print(" q.y: ");
-//		printn(q.y);
-//		print(" q.z: ");
-//		printn(q.z);
-//		println("");
+		status = MPUdmpGetQuaternion(&q, fifoBuffer);
+		if (status) {
+			print("status: ");
+			printn(status);
+		}
+		print("q.w: ");
+		printn(q.w);
+		print("\r\n");
+
+		print(" q.x: ");
+		printn(q.x);
+		print("\r\n");
+
+		print(" q.y: ");
+		printn(q.y);
+		print("\r\n");
+
+		print(" q.z: ");
+		printn(q.z);
+		print("\r\n");
 #endif
 
 #ifdef OUTPUT_READABLE_EULER
 		// display Euler angles in degrees
 		MPUdmpGetQuaternion(&q, fifoBuffer);
 		MPUdmpGetEuler(euler, &q);
-//		println("euler %7.2f %7.2f %7.2f    ", euler[0] * 180/M_PI, euler[1] * 180/M_PI, euler[2] * 180/M_PI);
+		println("euler:");
+		printn(euler[0] * 180/M_PI);
+		print("\r\n");
+
+		printn(euler[1] * 180/M_PI);
+		print("\r\n");
+
+		printn(euler[2] * 180/M_PI);
+		print("\r\n");
 #endif
 
 #ifdef OUTPUT_READABLE_YAWPITCHROLL
 		// display Euler angles in degrees
 		MPUdmpGetQuaternion(&q, fifoBuffer);
-		MPUdmpGetGravity(&gravity, &q);
+		MPUdmpGetGravityVect(&gravity, &q);
 		MPUdmpGetYawPitchRoll(ypr, &q, &gravity);
 		print("y: ");
 		printn(ypr[0] * 180/M_PI);
@@ -187,10 +209,39 @@ void DMPdata(void) {
 	}
 }
 
+void getTemperature() {
+	float temp;
+	temp = MPUgetTemperature();
+	print("temp: ");
+	printn(temp / 340.00 + 36.53);
+	print("\r\n");
+}
+
 void getRawAccelGyro(void) {
 	int16_t ax, ay, az, gx, gy, gz;
 
 	MPUgetMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+	print("ax: ");
+	printn(ax);
+	print("\r\n");
 
-//	sdWrite(&SD2, "x = ", ax);
+	print("ay: ");
+	printn(ay);
+	print("\r\n");
+
+	print("az: ");
+	printn(az);
+	print("\r\n");
+
+	print("gx: ");
+	printn(gx);
+	print("\r\n");
+
+	print("gy: ");
+	printn(gy);
+	print("\r\n");
+
+	print("gz: ");
+	printn(gz);
+	print("\r\n");
 }

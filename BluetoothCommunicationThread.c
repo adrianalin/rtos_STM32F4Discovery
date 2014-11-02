@@ -30,7 +30,7 @@ int bluetoothCommand[3];
     AT+BAUDC----1382400
 */
 
-void configureBluetoothDevice()
+void configureBluetoothDevice(void)
 {
 	char response[20];
 	int readTimeout = 5000;
@@ -142,8 +142,6 @@ static void parseMessage(char* message, int messageLength)
 	if (commandIndex == 2) {
 		memcpy(bluetoothCommand, command, sizeof(command));
 		confirmMessageLED();
-	} else {
-		errorRecvMessageLED();
 	}
 }
 
@@ -164,8 +162,6 @@ __attribute__((noreturn)) msg_t bluetoothCommunicationThread(void *arg)
 		if (recvLen >= 5) {
 			if (message[recvLen - 1] == 'S') {
 				parseMessage(message, recvLen);
-			} else {
-				errorRecvMessageLED();
 			}
 		}
 

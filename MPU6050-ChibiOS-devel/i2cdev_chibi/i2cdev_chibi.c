@@ -178,7 +178,7 @@ int8_t I2CdevreadBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t
 	rdymsg = i2cMasterTransmitTimeout(&I2C_MPU, devAddr, &regAddr, 1, data, length, MS2ST(timeout));
 	i2cReleaseBus(&I2C_MPU);
 	if(rdymsg == RDY_TIMEOUT || rdymsg == RDY_RESET) {
-		chprintf((BaseChannel *)&SD2,"I2C ERROR bag: %d\n", i2cGetErrors(&I2C_MPU));
+		chprintf((BaseChannel *)&SD2,"I2C ERROR: %d\n", i2cGetErrors(&I2CD2));
 		return FALSE;
 	}
 	return TRUE;

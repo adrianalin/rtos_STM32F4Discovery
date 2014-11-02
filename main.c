@@ -4,6 +4,7 @@
 // my includes
 #include "BluetoothCommunicationThread.h"
 #include "FlightControllerThread.h"
+#include "accelgiro.h"
 
 static WORKING_AREA(bluetoothCommunicationThread_WA, 128);
 static WORKING_AREA(flightControllerThread_WA, 128);
@@ -19,19 +20,18 @@ int main(void) {
 	halInit();
 	chSysInit();
 
-//	if(!init_i2c2())
-//		return 1;
-
 	chThdCreateStatic(bluetoothCommunicationThread_WA, sizeof(bluetoothCommunicationThread_WA),
 			NORMALPRIO, bluetoothCommunicationThread, NULL);
 
 	chThdCreateStatic(flightControllerThread_WA, sizeof(flightControllerThread_WA),
 			NORMALPRIO, flightControllerThread, NULL);
 
+	if(!init_i2c2())
+		return 1;
+
 	while(1)
 	{
-//		getRawAccelGyro();
-
-		chThdSleepMilliseconds(500);
+		DMPdata();
+		chThdSleepMilliseconds(50);
 	}
 }

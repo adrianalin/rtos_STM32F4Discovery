@@ -74,7 +74,7 @@ THE SOFTWARE.
     //#define DEBUG_PRINTLN(x) chprintf((BaseChannel *)&SD2, x);
     //#define DEBUG_PRINTLNF(x, y) chprintf((BaseChannel *)&SD2, x, y);
 #else
-    #define DEBUG_PRINT(x) 
+    #define DEBUG_PRINT(x)
     #define DEBUG_PRINTF(x, y)
     #define DEBUG_PRINTLN(x)
     #define DEBUG_PRINTLNF(x, y)
