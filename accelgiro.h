@@ -11,8 +11,11 @@
 #include "ch.h"
 #include "hal.h"
 
-bool_t init_i2c2(void);
-void DMPdata(void);
+void initI2C2(void);
+void initMPU(void);
+void initDMP(void);
+void getYPR(void);
 void getTemperature(void);
+void DMPdata(void);
 
 #endif /* ACCELGIRO_H_ */
