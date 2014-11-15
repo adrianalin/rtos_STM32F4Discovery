@@ -23,8 +23,6 @@ uint8_t fifoBuffer[64]; 	// FIFO storage buffer
 // orientation/motion vars
 Quaternion q;                          // quaternion for mpu output
 VectorFloat gravity;                   // gravity vector for ypr
-float ypr[3] = {0.0f,0.0f,0.0f};       // yaw pitch roll values
-float yprLast[3] = {0.0f, 0.0f, 0.0f};
 
 /* I2C interface #2 */
 static const I2CConfig i2cfg2 = {
@@ -96,7 +94,7 @@ void initDMP(void)
 	}
 }
 
-void getYPR()
+void getYPR(float* ypr)
 {
 	// get current FIFO count
 	mpuIntStatus = MPUgetIntStatus();
@@ -116,12 +114,8 @@ void getYPR()
 		MPUdmpGetQuaternion(&q, fifoBuffer);
 		MPUdmpGetGravityVect(&gravity, &q);
 		MPUdmpGetYawPitchRoll(ypr, &q, &gravity);
-		print("y: ");
-		printn(ypr[0] * 180/M_PI);
-		print(" p: ");
-		printn(ypr[1] * 180/M_PI);
-		print(" r: ");
-		printn(ypr[2] * 180/M_PI);
-		println("");
+		ypr[0] = ypr[0] * 180/M_PI;
+		ypr[1] = ypr[1] * 180/M_PI;
+		ypr[2] = ypr[2] * 180/M_PI;
 	}
 }

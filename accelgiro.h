@@ -14,7 +14,7 @@
 void initI2C2(void);
 void initMPU(void);
 void initDMP(void);
-void getYPR(void);
+void getYPR(float* ypr);
 void getTemperature(void);
 void DMPdata(void);
 

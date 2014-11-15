@@ -92,7 +92,7 @@ CSRC = $(PORTSRC) \
        $(CHIBIOS)/os/various/shell.c \
        $(CHIBIOS)/os/various/chprintf.c 							\
        usbcfg.c main.c BluetoothCommunicationThread.c PWMsetup.c utils.c		\
-       accelgiro.c								\
+       accelgiro.c PID.c							\
        MPU6050-ChibiOS-devel/i2cdev_chibi/i2cdev_chibi.c 			\
        MPU6050-ChibiOS-devel/MPU6050/MPU6050_6Axis_MotionApps20.c	\
        MPU6050-ChibiOS-devel/MPU6050/MPU6050.c
